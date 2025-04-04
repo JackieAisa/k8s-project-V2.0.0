@@ -1,7 +1,7 @@
-# Create ansible inventory dynamically 
+# Create ansible inventory file dynamically 
 
 resource "local_file" "ansible_inventory" {
-  filename = "/home/ubuntu/rke_project/cluster/ansible/hosts"
+  filename = "/home/ubuntu/k8s-project-V2.0.0/cluster/ansible/hosts"
 
   content = <<EOT
 
@@ -24,57 +24,25 @@ ${aws_instance.worker2.public_ip}
 EOT
 }
 
-# Create variables.tf dynamically for terraform-cluster creation  
+# Create variables.tf dynamically for terraform-cluster creation 
 
-resource "local_file" "terraform_vars" {
+resource "local_file" "terraform_variables" {
+  filename = "/home/ubuntu/k8s-project-V2.0.0/cluster/terraform-cluster/variables.tf"
 
-filename = "/home/ubuntu/rke_project/cluster/terraform-cluster/main.tf"
+  content = <<EOT
 
-content = <<EOT
-
-terraform {
-  required_providers {
-    rke = {
-      source = "rancher/rke"
-      version = "~> 1.4.0"
+variable master_ip {
+    default= "${aws_instance.master.public_ip}"
+    type = string
+}
+variable worker1_ip {
+    default="${aws_instance.worker1.public_ip}"
+    type = string 
+}
+variable worker2_ip {
+    default="${aws_instance.worker2.public_ip}"
+    type = string
     }
-  }
-}
-
-# provider "rke" {
-#   log_file = "rke_debug.log"
-# }
-
-# Create a new RKE cluster using arguments
-resource "rke_cluster" "cluster" {
-  enable_cri_dockerd = true
-  
-  nodes {
-    address = "${aws_instance.master.public_ip}"
-    user    = "rke"
-    role    = ["controlplane", "etcd"]
-    ssh_key = file("~/.ssh/id_rsa")
-  }
-
-  nodes {
-    address = "${aws_instance.worker1.public_ip}"
-    user    = "rke"
-    role    = ["worker"]
-    ssh_key = file("~/.ssh/id_rsa")
-  }
-
-  nodes {
-    address = "${aws_instance.worker2.public_ip}"
-    user    = "rke"
-    role    = ["worker"]
-    ssh_key = file("~/.ssh/id_rsa")
-  }
-}
-
-output kube_config {
-  value = rke_cluster.cluster.kube_config_yaml
-  sensitive = true 
-}
 
 EOT
 }

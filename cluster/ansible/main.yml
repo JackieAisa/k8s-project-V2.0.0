@@ -1,9 +1,9 @@
-- hosts: bastion
+- hosts: localhost
   become: yes
   roles:
     - install_docker
     - install_rke
-    # - install_kubernetes
+    - install_kubernetes
     # - create_cluster
 
 - hosts: master,workers
